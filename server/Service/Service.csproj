@@ -4,6 +4,12 @@
     <ProjectReference Include="..\infra\Infra.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BCrypt" Version="1.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.3.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

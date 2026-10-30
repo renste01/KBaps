@@ -1,0 +1,22 @@
+﻿import { FormEvent, useEffect, useState } from "react";
+type Role = "user" | "superuser" | "admin";
+type Account = { id: number; username: string; role: Role; createdUtc: string };
+type CurrentUser = { username: string; role: Role };
+const API = import.meta.env.BUN_PUBLIC_API_BASE ?? "https://localhost:7140";
+async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const response = await fetch(`${API}${path}`, { credentials: "include", ...init, headers: { "Content-Type": "application/json", ...(init.headers ?? {}) } });
+    if (response.status === 204) return undefined as T;
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.message ?? `Request failed (${response.status})`);
+    return body as T;
+}
+export function LoginPlatform() {
+    const [me,setMe]=useState<CurrentUser|null>(null),[accounts,setAccounts]=useState<Account[]>([]),[username,setUsername]=useState(""),[password,setPassword]=useState(""),[newUsername,setNewUsername]=useState(""),[newPassword,setNewPassword]=useState(""),[newRole,setNewRole]=useState<Role>("user"),[error,setError]=useState(""),[notice,setNotice]=useState("");
+    async function refresh(){setAccounts(await api<Account[]>("/api/users"));}
+    async function restore(){try{const current=await api<CurrentUser>("/api/auth/me");setMe(current);setAccounts(await api<Account[]>("/api/users"));}catch{setMe(null);}}
+    useEffect(()=>{void restore();},[]);
+    async function signIn(e:FormEvent){e.preventDefault();setError("");try{await api("/api/auth/login",{method:"POST",body:JSON.stringify({username,password})});setMe(await api<CurrentUser>("/api/auth/me"));setPassword("");await refresh();}catch(ex){setError(ex instanceof Error?ex.message:"Sign-in failed.");}}
+    async function signOut(){try{await api("/api/auth/logout",{method:"POST",body:"{}"});}finally{setMe(null);setAccounts([]);setNotice("Signed out.");}}
+    async function create(e:FormEvent){e.preventDefault();setError("");try{await api("/api/users",{method:"POST",body:JSON.stringify({username:newUsername,password:newPassword,role:newRole})});setNewUsername("");setNewPassword("");setNewRole("user");setNotice("Account created.");await refresh();}catch(ex){setError(ex instanceof Error?ex.message:"Creation failed.");}}
+    return <main className="login-platform"><header><p className="eyebrow">Kvist &amp; Bjælke ApS</p><h1>Login platform</h1><p>Secure account access with role-based permissions.</p></header>{error&&<p className="feedback error" role="alert">{error}</p>}{notice&&<p className="feedback" role="status">{notice}</p>}{!me?<section className="auth-card"><h2>Sign in</h2><form onSubmit={signIn}><label>Username<input autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} required minLength={3} maxLength={64}/></label><label>Password<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button>Sign in</button></form></section>:<section className="account-card"><div className="account-header"><div><h2>Welcome, {me.username}</h2><span className="role-badge">{me.role}</span></div><button type="button" className="quiet-button" onClick={signOut}>Sign out</button></div><section className="user-table"><div className="section-header"><h3>User accounts</h3><button className="quiet-button" onClick={()=>void refresh()}>Refresh</button></div><div className="table-scroll"><table><thead><tr><th>Username</th><th>Role</th><th>Created (UTC)</th></tr></thead><tbody>{accounts.map(a=><tr key={a.id}><td>{a.username}</td><td>{a.role}</td><td>{new Date(a.createdUtc).toLocaleString()}</td></tr>)}</tbody></table></div></section>{(me.role==="admin"||me.role==="superuser")&&<section className="create-account"><h3>Create an account</h3><form onSubmit={create}><label>Username<input value={newUsername} onChange={e=>setNewUsername(e.target.value)} required minLength={3} maxLength={64}/></label><label>Password (12 characters minimum)<input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} required minLength={12}/></label><label>Role<select value={newRole} onChange={e=>setNewRole(e.target.value as Role)} disabled={me.role!=="admin"}><option value="user">user</option><option value="superuser">superuser</option><option value="admin">admin</option></select></label><button>Create account</button></form></section>}</section>}</main>;
+}

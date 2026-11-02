@@ -1,8 +1,9 @@
-﻿import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 type Role = "user" | "superuser" | "admin";
 type Account = { id: number; username: string; role: Role; createdUtc: string };
 type CurrentUser = { username: string; role: Role };
-const API = import.meta.env.BUN_PUBLIC_API_BASE ?? "https://localhost:7140";
+const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? "https://localhost:7140";
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API}${path}`, { 
         credentials: "include", ...init, 
@@ -97,10 +98,12 @@ export function LoginPlatform() {
         <section className="auth-card">
             <h2>Sign in</h2>
             <form onSubmit={signIn}>
-            <label>Username<input autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} required minLength={3} maxLength={64}/>
+            <label>Username <input autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} required minLength={3} maxLength={64}/>
             </label>
-            <label>Password<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>
+                <div>
+            <label>Password <input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>
             </label>
+                </div>
             <button>Sign in</button>
         </form></section>:<section className="account-card"><div className="account-header">
             <div>

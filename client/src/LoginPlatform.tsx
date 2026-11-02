@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+
 type Role = "user" | "superuser" | "admin";
 type Account = { id: number; username: string; role: Role; createdUtc: string };
 type CurrentUser = { username: string; role: Role };
+
 const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? "https://localhost:8050";
+
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API}${path}`, { 
         credentials: "include", ...init, 
-        headers: { "Content-Type": "application/json", ...(init.headers ?? {}) } });
+        headers: { "Content-Type": "application/json", 
+            ...(init.headers ?? {}) 
+        } 
+    });
     if (response.status === 204) return undefined as T;
     
     const body = await response.json().catch(() => ({}));
@@ -16,6 +22,7 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     
     return body as T;
 }
+
 export function LoginPlatform() {
     const [me,setMe]=useState<CurrentUser|null>(null),
         [accounts,setAccounts]=useState<Account[]>([]),
@@ -143,9 +150,12 @@ export function LoginPlatform() {
                     <label>Username
                         <input value={newUsername} onChange={e=> setNewUsername(e.target.value)} required minLength={3} maxLength={64}/>
                     </label>
+                    <div>
                     <label>Password (12 characters minimum)
                         <input type="password" value={newPassword} onChange={e=> setNewPassword(e.target.value)} required minLength={12}/>
                     </label>
+                    </div>
+                    <div>
                     <label>Role
                         <select value={newRole} onChange={e=> setNewRole(e.target.value as Role)} disabled={me.role!=="admin"}>
                             <option value="user">user</option>
@@ -153,6 +163,7 @@ export function LoginPlatform() {
                             <option value="admin">admin</option>
                         </select>
                     </label>
+                    </div>
                     <button>Create account</button>
                 </form>
             </section>}

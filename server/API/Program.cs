@@ -8,12 +8,21 @@ using Service;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LoginDbContext>(o => o.UseSqlite(builder.Configuration.GetConnectionString("LoginDb") ?? "Data Source=kbaps.db"));
+var clientOrigin = builder.Configuration["KBAPS_CLIENT_ORIGIN"] ?? "http://localhost:3000";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Client", policy => policy
+        .WithOrigins(clientOrigin)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+});
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
 {
     o.Cookie.Name = "KBaps.Auth";
     o.Cookie.HttpOnly = true;
     o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    o.Cookie.SameSite = SameSiteMode.Strict;
+    o.Cookie.SameSite = SameSiteMode.None;
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     o.SlidingExpiration = true;
     o.Events.OnRedirectToLogin = c => { c.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };
@@ -22,6 +31,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 var app = builder.Build();
 app.UseHttpsRedirection();
+app.UseCors("Client");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -77,6 +87,7 @@ users.MapPut("/{id:int}", async Task<IResult> (int id, UpdateAccountRequest requ
 {
     var actorRole = actor.FindFirst(ClaimTypes.Role)?.Value;
     var user = await db.Users.FindAsync(id);
+    
     if (user is null) return Results.NotFound();
     if (actorRole == AccountRoles.Superuser && user.Role != AccountRoles.User) return Results.Forbid();
     if (actorRole is not (AccountRoles.Superuser or AccountRoles.Admin)) return Results.Forbid();

@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 type Role = "user" | "superuser" | "admin";
 type Account = { id: number; username: string; role: Role; createdUtc: string };
 type CurrentUser = { username: string; role: Role };
-const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? "https://localhost:7140";
+const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? "https://localhost:8050";
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API}${path}`, { 
         credentials: "include", ...init, 

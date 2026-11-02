@@ -1,8 +1,8 @@
-import { APITester } from "./APITester";
 import "./index.css";
 
 import logo from "./logo.svg";
 import reactLogo from "./react.svg";
+import {LoginPlatform} from "@/LoginPlatform.tsx";
 
 export function App() {
   return (
@@ -16,7 +16,7 @@ export function App() {
       <p>
         Edit <code>src/App.tsx</code> and save to test HMR
       </p>
-      <APITester />
+      <LoginPlatform />
     </div>
   );
 }

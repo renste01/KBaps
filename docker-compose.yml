@@ -6,7 +6,7 @@
     container_name: kbaps-backend
     restart: unless-stopped
     ports:
-    -  "8051:8080"
+    -  "8051:8050"
 
   client:
     build: ./client

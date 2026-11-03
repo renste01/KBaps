@@ -7,7 +7,7 @@
     restart: unless-stopped
     ports:
   
-  "8051:8080"      # host:container, change 8080 to the port from the Dockerfile
+  "8051:8080"
 
 client:
   build: ./client
@@ -15,6 +15,6 @@ client:
   restart: unless-stopped
   ports:
   
-  "8050:3000"      # host:container, change 3000 if the app listens elsewhere
+  "8050:3000"
 depends_on:
   backend

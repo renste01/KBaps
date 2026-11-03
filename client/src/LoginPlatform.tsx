@@ -5,7 +5,7 @@ type Role = "user" | "superuser" | "admin";
 type Account = { id: number; username: string; role: Role; createdUtc: string };
 type CurrentUser = { username: string; role: Role };
 
-const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? "http://localhost:8050";
+const API = import.meta.env?.BUN_PUBLIC_API_BASE ?? `http://${window.location.hostname}:8051`;
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API}${path}`, { 

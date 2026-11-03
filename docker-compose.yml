@@ -1,0 +1,20 @@
+﻿services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kbaps-backend
+    restart: unless-stopped
+    ports:
+  
+  "8051:8080"      # host:container, change 8080 to the port from the Dockerfile
+
+client:
+  build: ./client
+  container_name: kbaps-client
+  restart: unless-stopped
+  ports:
+  
+  "8050:3000"      # host:container, change 3000 if the app listens elsewhere
+depends_on:
+  backend

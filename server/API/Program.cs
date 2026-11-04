@@ -8,21 +8,24 @@ using Service;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LoginDbContext>(o => o.UseSqlite(builder.Configuration.GetConnectionString("LoginDb") ?? "Data Source=kbaps.db"));
-var clientOrigin = builder.Configuration["KBAPS_CLIENT_ORIGIN"] ?? "http://localhost:3000";
+var clientOrigins = (builder.Configuration["KBAPS_CLIENT_ORIGIN"]
+                     ?? "http://localhost:3000,http://localhost:8050,http://10.5.71.95:8050")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Client", policy => policy
-        .WithOrigins(clientOrigin)
+        .WithOrigins(clientOrigins)
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());
 });
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
 {
     o.Cookie.Name = "KBaps.Auth";
     o.Cookie.HttpOnly = true;
-    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    o.Cookie.SameSite = SameSiteMode.None;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    o.Cookie.SameSite = SameSiteMode.Lax;
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     o.SlidingExpiration = true;
     o.Events.OnRedirectToLogin = c => { c.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };

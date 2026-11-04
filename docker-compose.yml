@@ -1,0 +1,18 @@
+﻿services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kbaps-backend
+    restart: unless-stopped
+    ports:
+    -  "8051:8050"
+
+  client:
+    build: ./client
+    container_name: kbaps-client
+    restart: unless-stopped
+    ports:
+      -  "8050:3000"
+    depends_on:
+      -  backend

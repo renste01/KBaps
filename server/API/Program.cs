@@ -24,8 +24,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 {
     o.Cookie.Name = "KBaps.Auth";
     o.Cookie.HttpOnly = true;
-    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    o.Cookie.SameSite = SameSiteMode.None;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    o.Cookie.SameSite = SameSiteMode.Lax;
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     o.SlidingExpiration = true;
     o.Events.OnRedirectToLogin = c => { c.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };

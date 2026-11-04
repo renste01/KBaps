@@ -1,8 +1,37 @@
 # CDS.Security
 
-## 1.1 Development of the login platform
+## 1.2 Implementation
 
-## 1.2 Implemention
+### Authentication method
+
+Vi har valgt at bruge cookie baseret autentificering (ASP.NET core) med en rollebaseret autorisation.
+Dette virker på den måde at brugeren udfylder login formularen i React som sender brugernavn og adgangskode til Post, Dette gør at API’en finder brugeren i databasen og verificerer adgangskoden, hvis det går igennem opretter den en Claims Principal med 3 claims, bruger id, brugernavn og rolle, derefter udsteder Sign In Async en krypteret cookie, denne cookie er HttpOnly så Javascript kan ikke læse den, det hjælper imode XSS tyveri som normalt bruger Javascript til at gå efter cookies.
+Klienten kalder fetch med credentials: “include”, dette betyder at browseren automatisk sender cookien med ved hvert kald, hvis man genindlæser siden kalder klienten en Get som autentificerer at det er den rigtige person og ved log out kalder den POST som sletter cookien.
+
+### Password handling and storage
+
+Adgangskoderne er håndteret med BCrypt som gør at de aldrig bliver gemt som klartekst, men de bliver gemt som tilfældigt genereret salt og en work factor som gør hashing langsomt så det er dyrt at tvinge igennem.
+
+Adgangskoderne bliver lagret med kun Password Hash som gemmes i SQLite Tabellen Users, dette betyder at adgangskoden ikke findes op Account User eller Account Response, så hverken adgangskoden eller hash bliver sendt tilbage.
+
+Der er et krav til adgangskoder og det er at de skal være 12 tegn lange.
+
+### Screenshots demonstrating key functionality
+Loginskærm:
+
+![img.png](images/img.png)
+
+Forkert password:
+
+![img_1.png](images/img_1.png)
+
+Successfuldt login:
+
+![img_2.png](images/img_2.png)
+
+Efter oprettelse af ny bruger:
+
+![img_3.png](images/img_3.png)
 
 ---
 
@@ -77,7 +106,7 @@ Login-platformen er deployet på en virtuel maskine i Proxmox med følgende ops�
 
 **Brugte porte:** Vi har valgt port 8050 til webapplikationen og 8051 til backend-API'et. Begge ligger i det tilladte interval 8000–8100, som firewallen tillader fra VLAN 570 til VLAN 571.
 
-![img.png](zScreenshots/SC3.png)
+![img.png](images/SC3.png)
 
 ### Docker og deployment af login-platformen
 
@@ -97,11 +126,11 @@ Vi har oprettet en  virtuel maskine (VM 120, `VLAN-570-client`) med Ubuntu Deskt
 
 Klienten åbner platformen i Firefox på `http://10.5.71.95:8050`:
 
-![img.png](zScreenshots/SC1.png)
+![img.png](images/SC1.png)
 
 Efter login som `admin` vises brugeroversigten og formularen til at oprette konti. Det viser, at både frontend, backend og rollebaseret adgang virker fra klienten:
 
-![img.png](zScreenshots/SC2.png)
+![img.png](images/SC2.png)
 
 ### Firewall og kommunikation mellem VLANs
 
@@ -123,7 +152,7 @@ Hvis man kun åbner de porte, der er nødvendige, mindsker man angrebsfladen. Kl
 
 ### Server – VLAN 571
 
-![img.png](zScreenshots/SC3.png)
+![img.png](images/SC3.png)
 
 Ubuntu Server er installeret og i drift på serveren i VLAN 571. Serveren har den korrekte IP-konfiguration med adressen 10.5.71.95, som ligger i VLAN 571 (10.5.71.0/24). Docker er installeret og fungerer, hvilket ses ved, at `docker compose up -d` og `docker compose ps` kører uden fejl. Login-platformen kører inde i to Docker-containere, `kbaps-client` og `kbaps-backend`, som begge har status "Up". Platformen er tilgængelig på de valgte porte: `curl http://localhost:8050` returnerer webapplikationens HTML, og `curl http://localhost:8051` returnerer `"status":"ready"`.
 
@@ -132,18 +161,25 @@ Ubuntu Server er installeret og i drift på serveren i VLAN 571. Serveren har de
 ### Client – VLAN 570
 
 
-![img.png](zScreenshots/SC1.png)
+![img.png](images/SC1.png)
 
-![img.png](zScreenshots/SC2.png)
+![img.png](images/SC2.png)
 
 ### Resultater af klientens tests:
 
-![img.png](zScreenshots/SC4.png)
+| Test | Resultat |
+|---|---|
+| Klientens IP (VLAN 570) | 10.5.70.238  |
+| Klientens gateway | 10.5.70.5 (ping: 0 % tab) |
+| Serverens IP (VLAN 571) | 10.5.71.95 |
+| Ping klient → server | 100 % tab (ICMP er blokeret) |
+| `curl -v http://10.5.71.95:8050` | HTTP/1.1 200 OK, KBaps-siden returneres |
+| Browsertest | Login-siden åbnede, og login virkede |
 
 - **Korrekt IP-konfiguration:** Klienten har IP-adressen 10.5.70.238 og gatewayen 10.5.70.5 (ping: 0 % tab).
 - **Adgang til login-platformen på VLAN 571:** Ja, `curl -v http://10.5.71.95:8050` giver HTTP/1.1 200 OK, og KBaps-siden returneres.
 - **Platformens funktioner kan bruges fra klienten:** Ja, login-siden åbner i browseren, og login som `admin` lykkedes.
-
+- **Test af forbindelse:** Forbindelsen blev testet ved at sende ping-anmodninger til serverne. Da vi testede forbindelsen fra klienten til serveren, mislykkedes ping-testen, fordi ICMP-trafik er blokeret i firewall'en. Det betyder, at ping-pakkerne bliver afvist, men ikke at forbindelsen mellem klient og server er usikker eller ikke fungerer. Blokeringen er en del af sikkerhedsopsætningen og forhindrer uautoriserede ICMP-anmodninger.
 
 
 

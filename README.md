@@ -1,3 +1,10 @@
+# Github link
+## https://github.com/renste01/KBaps
+
+***OBS: Billeder kan kun ses i selve README.md og ikke på Github.***
+
+---
+
 # CDS.Security
 
 ## 1.2 Implementation
@@ -191,12 +198,30 @@ Derefter havde et problem med, at applikationen var sat til at bruge localhost, 
 
 ---
 
-# Reflektion
+# Vores reflektion
 
 ## Hvordan er security og infrastructure bundet sammen?
 
+Vi har fået en forståelse omkring hvordan Security og infrastructure hænger sammen, da en sikker applikation ikke hjælper meget, hvis den kører på et usikkert netværk. I CDS.security sørgede vi for, at adgangskoderne bliver hashet med `BCrypt`, at cookien er `HttpOnly`. I CDS.infrastructure sørgede vi så for, at serveren ligger i sit eget VLAN. Så vi har både en sikkerhed i selve koden og i netværket rundt om det. 
+
 ## Hvilke tekniske udfordringer har I stødt på?
 
-## Hvad har i lært omkring deployment af en applikation på en server?
+Vi stødte på flere udfordringer undervejs. Opsætningen af Ubuntu og Proxmox tog længere tid end forventet, fordi Wi-Fi'et var overbelastet, og vi hele tiden blev koblet af. Derudover var applikationen sat til at bruge `localhost`, så vi ikke kunne logge ind fra klienten på et andet VLAN, og det skulle rettes i Rider. Vi skulle også lave vores opsætning om fra almindelige Dockerfiles til Docker Compose, så frontend og backend kunne køre sammen. Til sidst var det også en udfordring bare at forstå, hvordan man bruger en virtuel maskine med Docker, når man ikke har gjort det før på sådan en måde.
 
-## Hvad ville I gøre anderledes hvis opgaven skulle deployes i en virksomhed? 
+## Hvad har I lært omkring deployment af en applikation på en server?
+
+Vi har lært, at det er en stor forskel på at få noget til at virke på sin computer og at få det til at virke på en server. Vi er vandt til at køre vores projekter/opgaver lokalt eller deployet via `Fly.io`, så dette projekt har givet os en stor indsigt i de ting man ikke tænker over. Nogle af de ting er IP-adresser, porte og firewalls. 
+Vi har også lært, hvordan man praktisk anvender Docker og Docker Compose og hvad forskellen på de to er (Da vi ikke indså et af vores problemer var at vi manglede en Docker Compose fil). Derudover har vi lært at fejlfinde: om containerne kører, om applikationen svarer lokalt på serveren, og om klienten kan nå den over netværket.
+
+## Hvad ville I gøre anderledes hvis opgaven skulle deployes i en virksomhed?
+
+Ved rigtig virksomhed, ville vi først og fremmest bruge HTTPS i stedet for HTTP, så login-oplysninger og cookies bliver sendt over netværket på en sikker måde. Vi ville også sætte en reverse proxy foran applikationen i stedet for at åbne portene direkte. Databasen ville vi også flytte væk fra SQLite til en rigtig databaseserver, og vi ville tage backups. 
+
+
+___
+
+# Vores brug af AI
+
+Vi har brugt AI som et hjælpemiddel til at forstå de forskellige emner og teorien som vi har arbejdet med. AI har blandt andet været brugt til at få forklaret begreber, forstå hvordan forskellige teknologier fungerer og eventuelt få hjælp til at finde årsagen til fejl som vi er stødt på undervejs. Vi har generelt benyttet AI som et læringsværktøj, hvor vi har kunnet stille spørgsmål og få uddybet de ting, vi har haft svært ved at forstå eller ikke har hørt om før. Vi har dog selv stået for at skrive koden og implementere løsningerne - Altså AI er primært blevet brugt til at understøtte vores forståelse.
+
+___
